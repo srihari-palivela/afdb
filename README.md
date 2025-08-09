@@ -49,10 +49,16 @@ Construct clients:
 ```rust
 use afdb::config::Config;
 use afdb::semantic::pipeline::{HttpEmbedder, ReasoningClient, Embedder};
+use afdb::storage::Engine;
 
 let cfg = Config::default();
 let http_emb = HttpEmbedder::new(cfg.embedding.clone().unwrap(), cfg.vector_dims)?;
 let llm = ReasoningClient::new(cfg.reasoning.clone().unwrap())?;
 let v = http_emb.embed("payment failed on renewal");
 let answer = llm.complete("Why did ARR dip last week?", serde_json::json!({"week": "2025-W27"}))?;
+
+// In-kernel embedding on insert
+let engine = Engine::new(Box::new(http_emb), cfg.vector_dims);
+engine.insert(1, afdb::types::Row { key: afdb::types::RowKey("1".into()), payload: serde_json::json!({"text": "card declined"}) });
+let hits = engine.flat_index.read().cosine_topk(&engine.embedder.embed("credit card failed"), 3);
 ```

@@ -2,6 +2,8 @@
 use afdb::semantic::pipeline::{DummyEmbedder, Embedder};
 use afdb::vector::flat::FlatIndex;
 use afdb::vector::hnsw::HnswIndex;
+use afdb::storage::Engine;
+use afdb::types::{Row, RowKey};
 
 #[test]
 fn flat_index_topk_basic() {
@@ -40,4 +42,15 @@ fn hnsw_index_returns_results() {
     for (_, s) in hits {
         assert!(s >= -1.0 && s <= 1.0);
     }
+}
+
+#[test]
+fn engine_insert_embeds_and_indexes() {
+    let emb = DummyEmbedder::new("demo-mini", 32);
+    let eng = Engine::new(Box::new(emb), 32);
+    let row = Row { key: RowKey("r1".to_string()), payload: serde_json::json!({"text": "payment failed"}) };
+    eng.insert(1, row);
+    // query via flat index directly
+    let hits = eng.flat_index.read().cosine_topk(&eng.embedder.embed("credit card failed"), 1);
+    assert_eq!(hits.len(), 1);
 }
