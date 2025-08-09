@@ -4,6 +4,9 @@ use afdb::vector::flat::FlatIndex;
 use afdb::vector::hnsw::HnswIndex;
 use afdb::storage::Engine;
 use afdb::types::{Row, RowKey};
+use afdb::persona::Persona;
+use afdb::raci::RaciRole;
+use afdb::query::planner::Planner;
 
 #[test]
 fn flat_index_topk_basic() {
@@ -53,4 +56,20 @@ fn engine_insert_embeds_and_indexes() {
     // query via flat index directly
     let hits = eng.flat_index.read().cosine_topk(&eng.embedder.embed("credit card failed"), 1);
     assert_eq!(hits.len(), 1);
+}
+
+#[test]
+fn persona_shaping_blocks_without_r_or_a() {
+    let emb = DummyEmbedder::new("demo-mini", 32);
+    let mut idx = FlatIndex::new(32);
+    idx.add(1, emb.embed("payment failed"));
+    let persona = Persona { person_id: "u1".into(), assumed_roles: vec![], org_scope: roaring::RoaringBitmap::new(), raci_allowed: vec![] };
+    let planner = Planner::new(&emb).with_persona(&persona);
+    let hits = planner.similar_flat(&idx, "credit card failed", 3);
+    assert_eq!(hits.len(), 0);
+    // Allow with R role
+    let persona_r = Persona { person_id: "u1".into(), assumed_roles: vec![], org_scope: roaring::RoaringBitmap::new(), raci_allowed: vec![RaciRole::R] };
+    let planner_r = Planner::new(&emb).with_persona(&persona_r);
+    let hits_r = planner_r.similar_flat(&idx, "credit card failed", 3);
+    assert!(hits_r.len() > 0);
 }

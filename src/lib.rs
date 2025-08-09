@@ -7,6 +7,10 @@ pub mod semantic;
 pub mod vector;
 pub mod query;
 pub mod catalog;
+pub mod org;
+pub mod raci;
+pub mod policy;
+pub mod persona;
 
 pub use config::Config;
 
