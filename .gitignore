@@ -1,0 +1,14 @@
+# Rust build
+/target/
+**/*.rs.bk
+
+# Editors/OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Env/Secrets (if any examples use these)
+.env
+.env.*
