@@ -1,4 +1,4 @@
-use axum::{routing::{post, get}, Router, Json, extract::State};
+use axum::{routing::{post, get}, Router, Json, extract::{State, FromRef}, http::HeaderMap};
 use tower_http::cors::{CorsLayer, Any};
 use serde::{Serialize, Deserialize};
 use std::sync::Arc;
@@ -7,6 +7,7 @@ use crate::persona::Persona;
 use crate::org::{OrgGraph, OrgUnit};
 use roaring::RoaringBitmap;
 use uuid::Uuid;
+use crate::query::planner::Planner;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -102,13 +103,32 @@ async fn assume_role(State(st): State<AppState>, Json(req): Json<AssumeReq>) -> 
 #[derive(Deserialize)]
 struct SemanticQlReq { ql: String }
 #[derive(Serialize)]
-struct SemanticQlResp { hits: Vec<(u64, f32)> }
-async fn semanticql(State(st): State<AppState>, Json(req): Json<SemanticQlReq>) -> Json<SemanticQlResp> {
+struct SemanticQlResp { hits: Vec<(u64, f32)>, masked: bool, aggregate_only: bool, total: usize }
+async fn semanticql(State(st): State<AppState>, headers: HeaderMap, Json(req): Json<SemanticQlReq>) -> Json<SemanticQlResp> {
+    let mut masked = false;
+    let mut aggregate_only = false;
     if let Some(parsed) = crate::query::SemanticQl::parse(&req.ql) {
-        let hits = st.engine.flat_index.read().cosine_topk(&st.engine.embedder.embed(&parsed.query), parsed.k);
-        return Json(SemanticQlResp { hits });
+        // Persona from session header
+        let persona = headers.get("X-Session-Id").and_then(|h| h.to_str().ok()).and_then(|sid| st.sessions.read().get(sid).cloned());
+        // Planner with optional persona shaping
+        let planner = if let Some(ref p) = persona { Planner::new(&*st.engine.embedder).with_persona(p) } else { Planner::new(&*st.engine.embedder) };
+        let mut hits = planner.similar_flat(&st.engine.flat_index.read(), &parsed.query, parsed.k);
+
+        // Trivial policy enforcement demo using in-memory policies list
+        // If any policy named "aggregate_only" present, enforce aggregate only
+        for pol in st.policies.read().iter() {
+            match pol.effect.as_str() {
+                "aggregate_only" => { aggregate_only = true; },
+                "deny" => { hits.clear(); },
+                "mask" => { masked = true; },
+                _ => {}
+            }
+        }
+        let total = hits.len();
+        if aggregate_only { hits.clear(); }
+        return Json(SemanticQlResp { hits, masked, aggregate_only, total });
     }
-    Json(SemanticQlResp { hits: vec![] })
+    Json(SemanticQlResp { hits: vec![], masked: false, aggregate_only: false, total: 0 })
 }
 
 #[derive(Deserialize)]
