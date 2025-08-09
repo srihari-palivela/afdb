@@ -26,3 +26,4 @@ regex = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal", "time"] }
 axum = { version = "0.7", features = ["macros", "json", "tokio"] }
 roaring = { version = "0.10", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }

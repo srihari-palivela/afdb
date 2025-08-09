@@ -11,6 +11,7 @@ pub mod org;
 pub mod raci;
 pub mod policy;
 pub mod persona;
+pub mod api;
 
 pub use config::Config;
 
