@@ -12,6 +12,7 @@ pub mod raci;
 pub mod policy;
 pub mod persona;
 pub mod api;
+pub mod util;
 
 pub use config::Config;
 

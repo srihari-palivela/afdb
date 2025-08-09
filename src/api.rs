@@ -8,6 +8,7 @@ use crate::org::{OrgGraph, OrgUnit};
 use roaring::RoaringBitmap;
 use uuid::Uuid;
 use crate::query::planner::Planner;
+use crate::util::{save_json, load_json};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -77,12 +78,19 @@ async fn upload(State(st): State<AppState>, Json(req): Json<UploadReq>) -> Json<
 
 #[derive(Deserialize)]
 struct ContractReq { contract: DataContract }
-async fn register_contract(Json(_req): Json<ContractReq>) -> Json<serde_json::Value> {
-    // For now just ack
+async fn register_contract(State(st): State<AppState>, Json(req): Json<ContractReq>) -> Json<serde_json::Value> {
+    st.contracts.write().push(req.contract.clone());
+    let _ = save_json(std::path::PathBuf::from("data/contracts.json"), &*st.contracts.read());
     Json(serde_json::json!({"status": "registered"}))
 }
 
 async fn list_contracts(State(st): State<AppState>) -> Json<Vec<DataContract>> {
+    // lazy load from disk if empty
+    if st.contracts.read().is_empty() {
+        if let Ok(v) = load_json::<Vec<DataContract>>(std::path::PathBuf::from("data/contracts.json")) {
+            *st.contracts.write() = v;
+        }
+    }
     Json(st.contracts.read().clone())
 }
 
