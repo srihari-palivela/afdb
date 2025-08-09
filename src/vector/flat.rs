@@ -21,6 +21,10 @@ impl FlatIndex {
         scores.truncate(k);
         scores
     }
+
+    pub fn cosine_scores_all(&self, q: &Vector) -> Vec<(u64, f32)> {
+        self.items.iter().map(|(id, v)| (*id, cosine(&q.0, &v.0))).collect()
+    }
 }
 
 fn cosine(a: &Vec<f32>, b: &Vec<f32>) -> f32 {

@@ -9,6 +9,10 @@ use std::io::{Write, Read};
 pub struct ZoneMap {
     pub min_len: u32,
     pub max_len: u32,
+    #[serde(default)]
+    pub min_ts: Option<u64>,
+    #[serde(default)]
+    pub max_ts: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -52,7 +56,7 @@ impl Segment {
             name: name.to_string(),
             offsets,
             blob,
-            zonemap: ZoneMap { min_len, max_len },
+            zonemap: ZoneMap { min_len, max_len, min_ts: None, max_ts: None },
         });
     }
 
