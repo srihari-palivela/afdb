@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  api:
+    build: .
+    image: afdb-api:latest
+    ports:
+      - "8090:8090"
+  web:
+    build: ./web
+    image: afdb-web:latest
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8090
+    ports:
+      - "5173:80"
+    depends_on:
+      - api

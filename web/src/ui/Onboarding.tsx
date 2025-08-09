@@ -9,8 +9,8 @@ export default function Onboarding() {
 
   const submit = async () => {
     // Placeholder calls: contracts + role to create session for demo
-    await axios.post('http://localhost:8090/contracts', { contract: { producer: 'confluence', schema_hash: 'deadbeef', pii_fields: ['email'] } });
-    const { data } = await axios.post('http://localhost:8090/assume_role', { person_id: 'u1', roles: ['QA-Inspector'], scope_ids: [1] });
+    await axios.post(import.meta.env.VITE_API_BASE_URL + '/contracts', { contract: { producer: 'confluence', schema_hash: 'deadbeef', pii_fields: ['email'] } });
+    const { data } = await axios.post(import.meta.env.VITE_API_BASE_URL + '/assume_role', { person_id: 'u1', roles: ['QA-Inspector'], scope_ids: [1] });
     notifications.show({ title: 'Onboarding complete', message: `Session ${data.session_id} created`, color: 'green' });
   };
 

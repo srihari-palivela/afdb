@@ -23,7 +23,7 @@ async fn main() {
         policies: Arc::new(parking_lot::RwLock::new(Vec::new())),
     };
     let app = api::router(state).route("/healthz", get(|| async { "ok" }));
-    let addr = std::net::SocketAddr::from(([127,0,0,1], 8090));
+    let addr = std::net::SocketAddr::from(([0,0,0,0], 8090));
     println!("API listening on http://{}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();

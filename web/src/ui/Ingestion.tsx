@@ -23,7 +23,7 @@ export default function Ingestion() {
         { id: file.name, text },
       ],
     };
-    await axios.post('http://localhost:8090/ingest', body, {
+    await axios.post(import.meta.env.VITE_API_BASE_URL + '/ingest', body, {
       headers: sessionId ? { 'X-Session-Id': sessionId } : undefined,
     });
     notifications.show({ title: 'Ingestion', message: 'Ingested successfully', color: 'green' });

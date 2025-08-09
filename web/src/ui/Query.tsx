@@ -9,7 +9,7 @@ export default function Query() {
   const { sessionId } = useSession();
 
   const run = async () => {
-    const { data } = await axios.post('http://localhost:8090/semanticql', { ql }, {
+    const { data } = await axios.post(import.meta.env.VITE_API_BASE_URL + '/semanticql', { ql }, {
       headers: sessionId ? { 'X-Session-Id': sessionId } : undefined,
     });
     setResult(JSON.stringify(data, null, 2));
