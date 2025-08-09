@@ -3,6 +3,7 @@ use afdb::{api, Config};
 use afdb::semantic::pipeline::{HttpEmbedder, DummyEmbedder, Embedder};
 use afdb::storage::Engine;
 use std::sync::Arc;
+use afdb::org::OrgGraph;
 
 #[tokio::main]
 async fn main() {
@@ -12,7 +13,15 @@ async fn main() {
         Err(_) => Box::new(DummyEmbedder::new("demo-mini", cfg.vector_dims)),
     };
     let engine = Arc::new(Engine::new(embedder, cfg.vector_dims));
-    let state = api::AppState { engine: engine.clone(), sessions: Arc::new(parking_lot::RwLock::new(std::collections::HashMap::new())) };
+    let state = api::AppState {
+        engine: engine.clone(),
+        sessions: Arc::new(parking_lot::RwLock::new(std::collections::HashMap::new())),
+        org: Arc::new(OrgGraph::new()),
+        company: Arc::new(parking_lot::RwLock::new(None)),
+        contracts: Arc::new(parking_lot::RwLock::new(Vec::new())),
+        taxonomy: Arc::new(parking_lot::RwLock::new(Vec::new())),
+        policies: Arc::new(parking_lot::RwLock::new(Vec::new())),
+    };
     let app = api::router(state).route("/healthz", get(|| async { "ok" }));
     let addr = std::net::SocketAddr::from(([127,0,0,1], 8090));
     println!("API listening on http://{}", addr);

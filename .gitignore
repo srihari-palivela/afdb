@@ -12,3 +12,7 @@
 # Env/Secrets (if any examples use these)
 .env
 .env.*
+
+# Web client
+web/node_modules/
+web/dist/

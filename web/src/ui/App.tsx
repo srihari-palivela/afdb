@@ -3,6 +3,7 @@ import Onboarding from './Onboarding';
 import Ingestion from './Ingestion';
 import Query from './Query';
 import RoleAssume from './RoleAssume';
+import Contracts from './Contracts';
 
 export default function App() {
   return (
@@ -23,11 +24,13 @@ export default function App() {
               <Tabs.Tab value="ingestion">Ingestion</Tabs.Tab>
               <Tabs.Tab value="query">Query</Tabs.Tab>
               <Tabs.Tab value="roles">Roles</Tabs.Tab>
+              <Tabs.Tab value="contracts">Contracts</Tabs.Tab>
             </Tabs.List>
             <Tabs.Panel value="onboarding" pt="md"><Onboarding /></Tabs.Panel>
             <Tabs.Panel value="ingestion" pt="md"><Ingestion /></Tabs.Panel>
             <Tabs.Panel value="query" pt="md"><Query /></Tabs.Panel>
             <Tabs.Panel value="roles" pt="md"><RoleAssume /></Tabs.Panel>
+            <Tabs.Panel value="contracts" pt="md"><Contracts /></Tabs.Panel>
           </Tabs>
         </Container>
       </AppShell.Main>
