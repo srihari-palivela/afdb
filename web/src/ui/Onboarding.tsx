@@ -1,13 +1,17 @@
-import { Button, Group, Paper, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Button, Group, Paper, Select, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useState } from 'react';
+import axios from 'axios';
+import { notifications } from '@mantine/notifications';
 
 export default function Onboarding() {
   const [company, setCompany] = useState('Acme Corp');
   const [rootUnit, setRootUnit] = useState('Manufacturing/QA');
 
-  const submit = () => {
-    // Placeholder: would POST to backend org/taxonomy setup endpoints
-    alert(`Onboarded ${company} with root ${rootUnit}`);
+  const submit = async () => {
+    // Placeholder calls: contracts + role to create session for demo
+    await axios.post('http://localhost:8090/contracts', { contract: { producer: 'confluence', schema_hash: 'deadbeef', pii_fields: ['email'] } });
+    const { data } = await axios.post('http://localhost:8090/assume_role', { person_id: 'u1', roles: ['QA-Inspector'], scope_ids: [1] });
+    notifications.show({ title: 'Onboarding complete', message: `Session ${data.session_id} created`, color: 'green' });
   };
 
   return (
