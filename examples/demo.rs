@@ -1,12 +1,17 @@
 
-use afdb::semantic::pipeline::{DummyEmbedder, Embedder};
+use afdb::semantic::pipeline::{DummyEmbedder, Embedder, HttpEmbedder, ReasoningClient};
 use afdb::vector::flat::FlatIndex;
 use afdb::vector::hnsw::HnswIndex;
 use afdb::types::{Vector};
+use afdb::Config;
 
 fn main() {
-    // 1) Prepare an embedder
-    let emb = DummyEmbedder::new("demo-mini", 64);
+    // 1) Prepare embedders/clients from config
+    let cfg = Config::default();
+    let http_emb = HttpEmbedder::new(cfg.embedding.clone().unwrap(), cfg.vector_dims).ok();
+    let emb = http_emb
+        .map(|e| Box::new(e) as Box<dyn Embedder>)
+        .unwrap_or_else(|| Box::new(DummyEmbedder::new("demo-mini", 64)));
 
     // 2) Build a flat index and insert a few vectors
     let mut flat = FlatIndex::new(64);
@@ -32,4 +37,13 @@ fn main() {
     }
     let h_hits = hnsw.topk(&emb.embed(q), 3);
     println!("HNSW hits: {:?}", h_hits);
+
+    // 5) Reasoning call (optional)
+    if let Some(reason_cfg) = cfg.reasoning.clone() {
+        if let Ok(reason) = ReasoningClient::new(reason_cfg) {
+            if let Ok(ans) = reason.complete("Why did ARR dip last week?", serde_json::json!({"week": "2025-W27"})) {
+                println!("Reasoning output: {}", ans);
+            }
+        }
+    }
 }
