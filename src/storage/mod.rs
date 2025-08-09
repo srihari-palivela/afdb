@@ -7,6 +7,7 @@ pub mod compactor;
 
 use crate::types::{Row, VersionedRow, Timestamp, TxnId, Vector};
 use crate::semantic::pipeline::Embedder;
+use crate::semantic::{Olsp, HeuristicOlsp, OlspOutput};
 use crate::vector::flat::FlatIndex;
 use parking_lot::RwLock;
 
@@ -15,6 +16,7 @@ pub struct Engine {
     pub flat_index: RwLock<FlatIndex>,
     pub embedder: Box<dyn Embedder>,
     pub now: RwLock<Timestamp>,
+    pub olsp: Box<dyn Olsp>,
 }
 
 impl Engine {
@@ -24,6 +26,7 @@ impl Engine {
             flat_index: RwLock::new(FlatIndex::new(dims)),
             embedder,
             now: RwLock::new(1),
+            olsp: Box::new(HeuristicOlsp),
         }
     }
 
@@ -41,6 +44,7 @@ impl Engine {
         if let Some(text) = row.payload.get("text").and_then(|x| x.as_str()) {
             let vec: Vector = self.embedder.embed(text);
             self.flat_index.write().add(self.hash_key(&row.key.0), vec);
+            let _olsp: OlspOutput = self.olsp.process(text);
         }
     }
 

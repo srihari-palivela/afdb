@@ -2,18 +2,20 @@
 use crate::types::Vector;
 use rand::{Rng, seq::SliceRandom};
 use smallvec::SmallVec;
+use serde::{Serialize, Deserialize};
 
 // A minimal, educational HNSW-like graph for approximate search.
 // Not production-ready; good for demos and API shape.
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 struct Node {
     id: u64,
     vec: Vector,
-    neighbors: SmallVec<[usize; 16]>, // indices into nodes
+    neighbors: Vec<usize>, // indices into nodes (serde-friendly)
     level: i32,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct HnswIndex {
     pub dims: usize,
     pub m: usize,          // max neighbors per level
@@ -32,7 +34,7 @@ impl HnswIndex {
     pub fn add(&mut self, id: u64, v: Vector) {
         let level = self.sample_level();
         let node_idx = self.nodes.len();
-        let node = Node { id, vec: v, neighbors: SmallVec::new(), level };
+        let node = Node { id, vec: v, neighbors: Vec::new(), level };
         self.nodes.push(node);
 
         if self.entry.is_none() {
@@ -93,7 +95,7 @@ impl HnswIndex {
             let s = cosine(&self.nodes[cur].vec.0, &q.0);
             best.push((cur, s));
             // push neighbors (shuffle to avoid bias)
-            let mut neigh = self.nodes[cur].neighbors.clone().into_vec();
+            let mut neigh = self.nodes[cur].neighbors.clone();
             neigh.shuffle(&mut rng);
             for n in neigh.into_iter().take(self.ef) {
                 if !visited.contains(&n) { frontier.push(n); }
@@ -124,4 +126,28 @@ fn cosine(a: &Vec<f32>, b: &Vec<f32>) -> f32 {
     }
     if na == 0.0 || nb == 0.0 { return 0.0; }
     dot / (na.sqrt()*nb.sqrt())
+}
+
+impl HnswIndex {
+    pub fn save_to(&self, path: std::path::PathBuf) -> anyhow::Result<()> {
+        std::fs::create_dir_all(path.parent().unwrap())?;
+        let mut f = std::fs::OpenOptions::new().create(true).write(true).open(path)?;
+        let bytes = bincode::serialize(self)?;
+        use std::io::Write;
+        f.write_all(&(bytes.len() as u32).to_le_bytes())?;
+        f.write_all(&bytes)?;
+        Ok(())
+    }
+
+    pub fn load_from(path: std::path::PathBuf) -> anyhow::Result<Self> {
+        let mut f = std::fs::OpenOptions::new().read(true).open(path)?;
+        let mut len_buf = [0u8;4];
+        use std::io::Read;
+        f.read_exact(&mut len_buf)?;
+        let len = u32::from_le_bytes(len_buf) as usize;
+        let mut buf = vec![0u8; len];
+        f.read_exact(&mut buf)?;
+        let idx: HnswIndex = bincode::deserialize(&buf)?;
+        Ok(idx)
+    }
 }
