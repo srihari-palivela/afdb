@@ -1,7 +1,7 @@
 import { Button, Code, Group, Paper, Stack, TextInput, Title } from '@mantine/core';
-import axios from 'axios';
 import { useState } from 'react';
 import { useSession } from '../store/session';
+import { api } from '../api/client';
 
 export default function Query() {
   const [ql, setQl] = useState('FIND SIMILAR "PPAP Level 3 submission warrant" IN semantic_en TOP 10');
@@ -9,9 +9,7 @@ export default function Query() {
   const { sessionId } = useSession();
 
   const run = async () => {
-    const { data } = await axios.post(import.meta.env.VITE_API_BASE_URL + '/semanticql', { ql }, {
-      headers: sessionId ? { 'X-Session-Id': sessionId } : undefined,
-    });
+    const { data } = await api.post('/semanticql', { ql });
     setResult(JSON.stringify(data, null, 2));
   };
 

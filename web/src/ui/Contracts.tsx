@@ -1,6 +1,6 @@
 import { Button, Group, Paper, Stack, Table, TextInput, Title } from '@mantine/core';
-import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { api } from '../api/client';
 
 interface Contract { producer: string; schema_hash: string; pii_fields: string[] }
 
@@ -11,12 +11,12 @@ export default function Contracts() {
   const [pii, setPii] = useState('email');
 
   const load = async () => {
-    const { data } = await axios.get('http://localhost:8090/contracts');
+    const { data } = await api.get('/contracts');
     setRows(data);
   };
 
   const register = async () => {
-    await axios.post('http://localhost:8090/contracts', { contract: { producer, schema_hash: hash, pii_fields: pii.split(',').map((s) => s.trim()) } });
+    await api.post('/contracts', { contract: { producer, schema_hash: hash, pii_fields: pii.split(',').map((s) => s.trim()) } });
     await load();
   };
 

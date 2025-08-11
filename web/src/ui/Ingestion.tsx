@@ -1,8 +1,8 @@
 import { Button, FileInput, Group, Paper, Stack, TextInput, Title } from '@mantine/core';
-import axios from 'axios';
 import { useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { useSession } from '../store/session';
+import { api } from '../api/client';
 
 export default function Ingestion() {
   const [sourceApp, setSourceApp] = useState('confluence');
@@ -23,9 +23,7 @@ export default function Ingestion() {
         { id: file.name, text },
       ],
     };
-    await axios.post(import.meta.env.VITE_API_BASE_URL + '/ingest', body, {
-      headers: sessionId ? { 'X-Session-Id': sessionId } : undefined,
-    });
+    await api.post('/ingest', body);
     notifications.show({ title: 'Ingestion', message: 'Ingested successfully', color: 'green' });
   };
 

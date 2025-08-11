@@ -1,7 +1,7 @@
 import { Button, Group, Paper, Select, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useState } from 'react';
-import axios from 'axios';
 import { notifications } from '@mantine/notifications';
+import { api } from '../api/client';
 
 export default function Onboarding() {
   const [company, setCompany] = useState('Acme Corp');
@@ -9,8 +9,8 @@ export default function Onboarding() {
 
   const submit = async () => {
     // Placeholder calls: contracts + role to create session for demo
-    await axios.post(import.meta.env.VITE_API_BASE_URL + '/contracts', { contract: { producer: 'confluence', schema_hash: 'deadbeef', pii_fields: ['email'] } });
-    const { data } = await axios.post(import.meta.env.VITE_API_BASE_URL + '/assume_role', { person_id: 'u1', roles: ['QA-Inspector'], scope_ids: [1] });
+    await api.post('/contracts', { contract: { producer: 'confluence', schema_hash: 'deadbeef', pii_fields: ['email'] } });
+    const { data } = await api.post('/assume_role', { person_id: 'u1', roles: ['QA-Inspector'], scope_ids: [1] });
     notifications.show({ title: 'Onboarding complete', message: `Session ${data.session_id} created`, color: 'green' });
   };
 
