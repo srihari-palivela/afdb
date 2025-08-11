@@ -1,4 +1,4 @@
-import { AppShell, Button, Container, Group, Tabs, Title } from '@mantine/core';
+import { AppShell, Button, Container, Group, Tabs, Title, Badge } from '@mantine/core';
 import Onboarding from './Onboarding';
 import Ingestion from './Ingestion';
 import Query from './Query';
@@ -6,21 +6,27 @@ import RoleAssume from './RoleAssume';
 import Contracts from './Contracts';
 import OrgUnits from './OrgUnits';
 import Taxonomy from './Taxonomy';
+import { useSession } from '../store/session';
 
 export default function App() {
+  const { sessionId } = useSession();
   return (
-    <AppShell header={{ height: 60 }} padding="md">
+    <AppShell header={{ height: 64 }} padding="md">
       <AppShell.Header>
         <Group justify="space-between" px="md" h="100%">
-          <Title order={3}>AFDB Console</Title>
-          <Group>
+          <Group gap="xs">
+            <Title order={3}>AFDB Console</Title>
+            <Badge variant="light" color="gray">Enterprise</Badge>
+          </Group>
+          <Group gap="xs">
+            {sessionId ? <Badge color="green" variant="light">Session</Badge> : <Badge color="yellow" variant="light">No session</Badge>}
             <Button component="a" href="https://github.com/srihari-palivela/afdb" variant="light">GitHub</Button>
           </Group>
         </Group>
       </AppShell.Header>
       <AppShell.Main>
         <Container size="lg">
-          <Tabs defaultValue="onboarding">
+          <Tabs defaultValue="onboarding" variant="outline" radius="md">
             <Tabs.List>
               <Tabs.Tab value="onboarding">Onboarding</Tabs.Tab>
               <Tabs.Tab value="ingestion">Ingestion</Tabs.Tab>

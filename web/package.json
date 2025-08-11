@@ -9,6 +9,7 @@
     "preview": "vite preview --port 5174"
   },
   "dependencies": {
+    "@fontsource/inter": "5.1.0",
     "@mantine/core": "7.12.1",
     "@mantine/hooks": "7.12.1",
     "@mantine/notifications": "7.12.1",
