@@ -3,7 +3,7 @@ import { MantineProvider, createTheme, MantineColorsTuple } from '@mantine/core'
 import { Notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
-import '@fontsource/inter/variable.css';
+import '@fontsource-variable/inter/index.css';
 import App from './ui/App';
 
 const slate: MantineColorsTuple = [
@@ -20,8 +20,8 @@ const slate: MantineColorsTuple = [
 ];
 
 const theme = createTheme({
-  fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-  headings: { fontFamily: 'Inter, ui-sans-serif, system-ui' },
+  fontFamily: 'InterVariable, Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+  headings: { fontFamily: 'InterVariable, Inter, ui-sans-serif, system-ui' },
   colors: { slate },
   primaryColor: 'slate',
   defaultRadius: 'md',
